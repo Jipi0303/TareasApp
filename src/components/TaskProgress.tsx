@@ -81,7 +81,7 @@ const TaskProgress: React.FC = () => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-34 left-6 p-3 bg-white text-purple-600 rounded-full shadow-lg hover:bg-purple-50 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-300"
+        className="fixed bottom-6 left-24 p-3 bg-white text-purple-600 rounded-full shadow-lg hover:bg-purple-50 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-300"
         title="Ver progreso"
       >
         <BarChart2 className="h-6 w-6" />
