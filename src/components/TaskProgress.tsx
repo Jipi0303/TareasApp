@@ -1,18 +1,15 @@
-import React, { useMemo } from 'react';
+import React, { useState } from 'react';
+import { BarChart2, X } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { TimeRange, TaskReport } from '../types';
+import { TimeRange } from '../types';
 import { useTaskContext } from '../context/TaskContext';
 
-interface TaskProgressProps {
-  timeRange: TimeRange;
-}
-
-const TaskProgress: React.FC<TaskProgressProps> = ({ timeRange }) => {
+const TaskProgress: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [timeRange, setTimeRange] = useState<TimeRange>('week');
   const { state } = useTaskContext();
 
-  const report = useMemo(() => {
+  const report = React.useMemo(() => {
     const now = new Date();
     const startDate = new Date();
     
@@ -81,62 +78,104 @@ const TaskProgress: React.FC<TaskProgressProps> = ({ timeRange }) => {
   }));
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <h3 className="text-lg font-semibold mb-4">Progreso de tareas</h3>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <p className="text-sm text-blue-600">Total de tareas</p>
-          <p className="text-2xl font-bold">{report.progress.total}</p>
-        </div>
-        
-        <div className="bg-green-50 p-4 rounded-lg">
-          <p className="text-sm text-green-600">Completadas</p>
-          <p className="text-2xl font-bold">
-            {report.progress.completed}
-            <span className="text-sm font-normal text-green-600 ml-2">
-              ({report.progress.percentage}%)
-            </span>
-          </p>
-        </div>
-        
-        <div className="bg-red-50 p-4 rounded-lg">
-          <p className="text-sm text-red-600">Vencidas</p>
-          <p className="text-2xl font-bold">{report.overdueTasks}</p>
-        </div>
-      </div>
+    <>
+      <button
+        onClick={() => setIsOpen(true)}
+        className="fixed bottom-34 left-6 p-3 bg-white text-purple-600 rounded-full shadow-lg hover:bg-purple-50 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-300"
+        title="Ver progreso"
+      >
+        <BarChart2 className="h-6 w-6" />
+      </button>
 
-      <div className="mb-6">
-        <h4 className="text-sm font-medium text-gray-600 mb-2">
-          Progreso por categoría
-        </h4>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="Completadas" fill="#10B981" />
-              <Bar dataKey="Total" fill="#93C5FD" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+      {isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="p-4 border-b flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Progreso de tareas</h2>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-1 rounded-full hover:bg-gray-100"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        {Object.entries(report.byStatus).map(([status, count]) => (
-          <div key={status} className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-sm text-gray-600">
-              {status === 'todo' && 'Por hacer'}
-              {status === 'in_progress' && 'En progreso'}
-              {status === 'done' && 'Completadas'}
-            </p>
-            <p className="text-xl font-semibold">{count}</p>
+            <div className="p-6">
+              <div className="mb-6 flex gap-2">
+                {(['week', 'month', 'year'] as TimeRange[]).map((range) => (
+                  <button
+                    key={range}
+                    onClick={() => setTimeRange(range)}
+                    className={`px-4 py-2 rounded-md ${
+                      timeRange === range
+                        ? 'bg-purple-100 text-purple-700'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {range === 'week' && 'Última semana'}
+                    {range === 'month' && 'Último mes'}
+                    {range === 'year' && 'Último año'}
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <p className="text-sm text-blue-600">Total de tareas</p>
+                  <p className="text-2xl font-bold">{report.progress.total}</p>
+                </div>
+                
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <p className="text-sm text-green-600">Completadas</p>
+                  <p className="text-2xl font-bold">
+                    {report.progress.completed}
+                    <span className="text-sm font-normal text-green-600 ml-2">
+                      ({report.progress.percentage}%)
+                    </span>
+                  </p>
+                </div>
+                
+                <div className="bg-red-50 p-4 rounded-lg">
+                  <p className="text-sm text-red-600">Vencidas</p>
+                  <p className="text-2xl font-bold">{report.overdueTasks}</p>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h4 className="text-sm font-medium text-gray-600 mb-2">
+                  Progreso por categoría
+                </h4>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="Completadas" fill="#10B981" />
+                      <Bar dataKey="Total" fill="#93C5FD" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                {Object.entries(report.byStatus).map(([status, count]) => (
+                  <div key={status} className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-600">
+                      {status === 'todo' && 'Por hacer'}
+                      {status === 'in_progress' && 'En progreso'}
+                      {status === 'done' && 'Completadas'}
+                    </p>
+                    <p className="text-xl font-semibold">{count}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        ))}
-      </div>
-    </div>
+        </div>
+      )}
+    </>
   );
 };
 
