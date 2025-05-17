@@ -204,8 +204,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, isOpen, onClose }) => {
               <div className="relative">
                 <input
                   type="date"
-                  value={formData.startDate.toISOString().split('T')[0]}
-                  onChange={(e) => handleDateChange('startDate', new Date(e.target.value))}
+                  value={formData.startDate ? formData.startDate.toISOString().split('T')[0] : ''}
+                  onChange={(e) => handleDateChange('startDate', e.target.value ? new Date(e.target.value) : null)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
