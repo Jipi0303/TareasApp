@@ -14,6 +14,8 @@ const initialCategory: Omit<TaskCategory, 'id'> = {
   color: '#3B82F6',
 };
 
+const MAX_CATEGORY_NAME_LENGTH = 30;
+
 const colorOptions = [
   '#3B82F6', // Blue
   '#10B981', // Green
@@ -27,7 +29,8 @@ const colorOptions = [
 
 const CategoryForm: React.FC<CategoryFormProps> = ({ category, isOpen, onClose }) => {
   const [formData, setFormData] = useState<Omit<TaskCategory, 'id'>>(initialCategory);
-  const { addCategory, updateCategory } = useTaskContext();
+  const [error, setError] = useState('');
+  const { addCategory, updateCategory, state } = useTaskContext();
 
   useEffect(() => {
     if (category) {
@@ -38,20 +41,37 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, isOpen, onClose }
     } else {
       setFormData(initialCategory);
     }
+    setError('');
   }, [category, isOpen]);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, name: e.target.value }));
+    const value = e.target.value;
+    if (value.length <= MAX_CATEGORY_NAME_LENGTH) {
+      setFormData((prev) => ({ ...prev, name: value }));
+      setError('');
+    }
   };
 
   const handleColorSelect = (color: string) => {
     setFormData((prev) => ({ ...prev, color }));
   };
 
+  const checkDuplicateName = (name: string): boolean => {
+    return state.categories.some(
+      (c) => c.name.toLowerCase() === name.toLowerCase() && c.id !== category?.id
+    );
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.name.trim()) {
+      setError('El nombre es requerido');
+      return;
+    }
+
+    if (checkDuplicateName(formData.name.trim())) {
+      setError('Ya existe una categoría con este nombre');
       return;
     }
 
@@ -87,18 +107,24 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, isOpen, onClose }
         <form onSubmit={handleSubmit} className="p-4">
           <div className="mb-4">
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre*
+              Nombre* <span className="text-gray-400 text-xs">({formData.name.length}/{MAX_CATEGORY_NAME_LENGTH})</span>
             </label>
             <input
               type="text"
               id="name"
               value={formData.name}
               onChange={handleNameChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                error ? 'border-red-500' : 'border-gray-300'
+              }`}
               placeholder="Nombre de la categoría"
               required
+              maxLength={MAX_CATEGORY_NAME_LENGTH}
               autoFocus
             />
+            {error && (
+              <p className="text-red-500 text-xs mt-1">{error}</p>
+            )}
           </div>
           
           <div className="mb-6">

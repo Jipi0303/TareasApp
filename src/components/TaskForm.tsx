@@ -22,10 +22,14 @@ const initialTask: Omit<Task, 'id' | 'createdAt'> = {
   recurrence: null,
 };
 
+const MAX_TITLE_LENGTH = 50;
+const MAX_DESCRIPTION_LENGTH = 200;
+
 const TaskForm: React.FC<TaskFormProps> = ({ task, isOpen, onClose }) => {
   const [formData, setFormData] = useState<Omit<Task, 'id' | 'createdAt'>>(initialTask);
   const [showCalendar, setShowCalendar] = useState(false);
   const { addTask, updateTask, state } = useTaskContext();
+  const [titleError, setTitleError] = useState('');
 
   useEffect(() => {
     if (task) {
@@ -40,8 +44,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, isOpen, onClose }) => {
         categoryId: task.categoryId,
         recurrence: task.recurrence,
       });
+      setTitleError('');
     } else {
       setFormData(initialTask);
+      setTitleError('');
     }
   }, [task, isOpen]);
 
@@ -49,7 +55,20 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, isOpen, onClose }) => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+    
+    if (name === 'title' && value.length > MAX_TITLE_LENGTH) {
+      return;
+    }
+    
+    if (name === 'description' && value.length > MAX_DESCRIPTION_LENGTH) {
+      return;
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    if (name === 'title') {
+      setTitleError('');
+    }
   };
 
   const handleRecurrenceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -87,6 +106,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, isOpen, onClose }) => {
     e.preventDefault();
     
     if (!formData.title.trim()) {
+      setTitleError('El título es requerido');
       return;
     }
 
@@ -122,7 +142,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, isOpen, onClose }) => {
         <form onSubmit={handleSubmit} className="p-4">
           <div className="mb-4">
             <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-              Título*
+              Título* <span className="text-gray-400 text-xs">({formData.title.length}/{MAX_TITLE_LENGTH})</span>
             </label>
             <input
               type="text"
@@ -130,16 +150,22 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, isOpen, onClose }) => {
               name="title"
               value={formData.title}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                titleError ? 'border-red-500' : 'border-gray-300'
+              }`}
               placeholder="¿Qué necesitas hacer?"
               required
+              maxLength={MAX_TITLE_LENGTH}
               autoFocus
             />
+            {titleError && (
+              <p className="text-red-500 text-xs mt-1">{titleError}</p>
+            )}
           </div>
           
           <div className="mb-4">
             <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-              Descripción
+              Descripción <span className="text-gray-400 text-xs">({formData.description.length}/{MAX_DESCRIPTION_LENGTH})</span>
             </label>
             <textarea
               id="description"
@@ -149,6 +175,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, isOpen, onClose }) => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Añade detalles sobre esta tarea"
               rows={3}
+              maxLength={MAX_DESCRIPTION_LENGTH}
             />
           </div>
 
@@ -181,13 +208,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, isOpen, onClose }) => {
                   onChange={(e) => handleDateChange('startDate', new Date(e.target.value))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                {/*<button
-                  type="button"
-                  onClick={() => setShowCalendar(true)}
-                  className="absolute right-2 top-2 text-gray-400 hover:text-blue-500"
-                >
-                  <Calendar className="h-5 w-5" />
-                </button>*/}
               </div>
             </div>
             
