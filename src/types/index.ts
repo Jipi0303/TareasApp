@@ -4,6 +4,8 @@ export type TaskStatus = 'todo' | 'in_progress' | 'done';
 
 export type RecurrenceType = 'daily' | 'weekly' | 'monthly' | null;
 
+export type Theme = 'light' | 'dark' | 'warm';
+
 export type TaskCategory = {
   id: string;
   name: string;
@@ -31,6 +33,7 @@ export type Task = {
 export type TasksState = {
   tasks: Task[];
   categories: TaskCategory[];
+  theme: Theme;
 };
 
 export type SortOption = 'dueDate' | 'priority' | 'createdAt' | 'alphabetical' | 'status';
