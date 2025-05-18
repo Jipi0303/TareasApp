@@ -1,3 +1,24 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --background: theme('colors.gray.50');
+  --text: theme('colors.gray.900');
+}
+
+:root.dark {
+  --background: theme('colors.gray.900');
+  --text: theme('colors.gray.100');
+}
+
+:root.warm {
+  --background: theme('colors.yellow.50');
+  --text: theme('colors.gray.900');
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text);
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
