@@ -24,7 +24,7 @@ export type Task = {
   recurrence: {
     type: RecurrenceType;
     frequency: number; // Times per day/week/month
-    completedInstances: number;
+    completedInstances: number; // Current count of completed instances
   } | null;
 };
 

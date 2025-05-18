@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle, Circle, Clock, Edit, Trash2 } from 'lucide-react';
+import { CheckCircle, Circle, Clock, Edit, Trash2, MinusCircle, PlusCircle } from 'lucide-react';
 import { Task } from '../types';
 import { formatDate, getPriorityColor, isOverdue, isToday, isTomorrow } from '../utils';
 import { useTaskContext } from '../context/TaskContext';
@@ -11,7 +11,7 @@ interface TaskItemProps {
 
 const TaskItem: React.FC<TaskItemProps> = ({ task, onEdit }) => {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
-  const { toggleTaskCompleted, deleteTask, getCategoryById } = useTaskContext();
+  const { toggleTaskCompleted, deleteTask, getCategoryById, updateTask } = useTaskContext();
   
   const category = getCategoryById(task.categoryId);
   
@@ -35,6 +35,23 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onEdit }) => {
       setShowConfirmDelete(true);
     }
   };
+
+  const handleCompletedInstancesChange = (increment: boolean) => {
+    if (!task.recurrence) return;
+
+    const newCount = increment 
+      ? Math.min(task.recurrence.completedInstances + 1, task.recurrence.frequency)
+      : Math.max(task.recurrence.completedInstances - 1, 0);
+
+    updateTask({
+      ...task,
+      recurrence: {
+        ...task.recurrence,
+        completedInstances: newCount
+      },
+      completed: newCount === task.recurrence.frequency
+    });
+  };
   
   const dueDateLabel = getDueDateLabel();
   const isTaskOverdue = task.dueDate && isOverdue(task.dueDate);
@@ -46,19 +63,51 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onEdit }) => {
       } hover:shadow-md`}
     >
       <div className="flex items-start">
-        <button
-          onClick={() => toggleTaskCompleted(task.id)}
-          className={`mt-0.5 flex-shrink-0 focus:outline-none ${
-            task.completed ? 'text-green-500' : 'text-gray-400 hover:text-blue-500'
-          }`}
-          title={task.completed ? 'Marcar como pendiente' : 'Marcar como completada'}
-        >
-          {task.completed ? (
-            <CheckCircle className="h-6 w-6" />
-          ) : (
-            <Circle className="h-6 w-6" />
-          )}
-        </button>
+        {task.recurrence ? (
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => handleCompletedInstancesChange(false)}
+              disabled={task.recurrence.completedInstances === 0}
+              className={`focus:outline-none ${
+                task.recurrence.completedInstances === 0 
+                  ? 'text-gray-300' 
+                  : 'text-blue-500 hover:text-blue-600'
+              }`}
+            >
+              <MinusCircle className="h-6 w-6" />
+            </button>
+            
+            <span className="text-lg font-medium">
+              {task.recurrence.completedInstances}/{task.recurrence.frequency}
+            </span>
+            
+            <button
+              onClick={() => handleCompletedInstancesChange(true)}
+              disabled={task.recurrence.completedInstances === task.recurrence.frequency}
+              className={`focus:outline-none ${
+                task.recurrence.completedInstances === task.recurrence.frequency
+                  ? 'text-gray-300'
+                  : 'text-blue-500 hover:text-blue-600'
+              }`}
+            >
+              <PlusCircle className="h-6 w-6" />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => toggleTaskCompleted(task.id)}
+            className={`mt-0.5 flex-shrink-0 focus:outline-none ${
+              task.completed ? 'text-green-500' : 'text-gray-400 hover:text-blue-500'
+            }`}
+            title={task.completed ? 'Marcar como pendiente' : 'Marcar como completada'}
+          >
+            {task.completed ? (
+              <CheckCircle className="h-6 w-6" />
+            ) : (
+              <Circle className="h-6 w-6" />
+            )}
+          </button>
+        )}
         
         <div className="ml-3 flex-grow">
           <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -82,6 +131,15 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onEdit }) => {
             <span className={`text-xs px-2 py-0.5 rounded-full text-white ${getPriorityColor(task.priority)}`}>
               {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
             </span>
+
+            {task.recurrence && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                {task.recurrence.frequency}x {' '}
+                {task.recurrence.type === 'daily' && 'al día'}
+                {task.recurrence.type === 'weekly' && 'por semana'}
+                {task.recurrence.type === 'monthly' && 'al mes'}
+              </span>
+            )}
           </div>
           
           {task.description && (

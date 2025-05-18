@@ -33,18 +33,67 @@ const TaskProgress: React.FC = () => {
     const completed = filteredTasks.filter(task => task.completed).length;
     const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
+    // Calculate recurrence completion rates
+    const recurringTasks = filteredTasks.filter(task => task.recurrence);
+    const recurringTotal = recurringTasks.reduce((acc, task) => {
+      if (task.recurrence) {
+        return acc + task.recurrence.frequency;
+      }
+      return acc;
+    }, 0);
+    
+    const recurringCompleted = recurringTasks.reduce((acc, task) => {
+      if (task.recurrence) {
+        return acc + task.recurrence.completedInstances;
+      }
+      return acc;
+    }, 0);
+
+    const recurringPercentage = recurringTotal > 0 
+      ? Math.round((recurringCompleted / recurringTotal) * 100)
+      : 0;
+
     const byCategory = state.categories.reduce((acc, category) => {
       const categoryTasks = filteredTasks.filter(task => task.categoryId === category.id);
       const categoryCompleted = categoryTasks.filter(task => task.completed).length;
+      
+      // Calculate recurrence completion for this category
+      const categoryRecurringTasks = categoryTasks.filter(task => task.recurrence);
+      const categoryRecurringTotal = categoryRecurringTasks.reduce((sum, task) => {
+        if (task.recurrence) {
+          return sum + task.recurrence.frequency;
+        }
+        return sum;
+      }, 0);
+      
+      const categoryRecurringCompleted = categoryRecurringTasks.reduce((sum, task) => {
+        if (task.recurrence) {
+          return sum + task.recurrence.completedInstances;
+        }
+        return sum;
+      }, 0);
+
       acc[category.id] = {
         completed: categoryCompleted,
         total: categoryTasks.length,
         percentage: categoryTasks.length > 0 
           ? Math.round((categoryCompleted / categoryTasks.length) * 100)
+          : 0,
+        recurringTotal: categoryRecurringTotal,
+        recurringCompleted: categoryRecurringCompleted,
+        recurringPercentage: categoryRecurringTotal > 0
+          ? Math.round((categoryRecurringCompleted / categoryRecurringTotal) * 100)
           : 0
       };
       return acc;
-    }, {} as Record<string, { completed: number; total: number; percentage: number }>);
+    }, {} as Record<string, { 
+      completed: number; 
+      total: number; 
+      percentage: number;
+      recurringTotal: number;
+      recurringCompleted: number;
+      recurringPercentage: number;
+    }>);
 
     const byStatus = {
       todo: filteredTasks.filter(task => task.status === 'todo').length,
@@ -63,6 +112,7 @@ const TaskProgress: React.FC = () => {
     return {
       timeRange,
       progress: { completed, total, percentage },
+      recurring: { completed: recurringCompleted, total: recurringTotal, percentage: recurringPercentage },
       byCategory,
       byStatus,
       overdueTasks,
@@ -72,8 +122,10 @@ const TaskProgress: React.FC = () => {
 
   const chartData = state.categories.map(category => ({
     name: category.name,
-    Completadas: report.byCategory[category.id]?.completed || 0,
-    Total: report.byCategory[category.id]?.total || 0,
+    'Tareas Completadas': report.byCategory[category.id]?.completed || 0,
+    'Total de Tareas': report.byCategory[category.id]?.total || 0,
+    'Instancias Completadas': report.byCategory[category.id]?.recurringCompleted || 0,
+    'Total de Instancias': report.byCategory[category.id]?.recurringTotal || 0,
     color: category.color,
   }));
 
@@ -81,7 +133,7 @@ const TaskProgress: React.FC = () => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 left-24 p-3 bg-white text-purple-600 rounded-full shadow-lg hover:bg-purple-50 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-300"
+        className="fixed bottom-20 left-6 p-3 bg-white text-purple-600 rounded-full shadow-lg hover:bg-purple-50 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-300"
         title="Ver progreso"
       >
         <BarChart2 className="h-6 w-6" />
@@ -135,9 +187,14 @@ const TaskProgress: React.FC = () => {
                   </p>
                 </div>
                 
-                <div className="bg-red-50 p-4 rounded-lg">
-                  <p className="text-sm text-red-600">Vencidas</p>
-                  <p className="text-2xl font-bold">{report.overdueTasks}</p>
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <p className="text-sm text-purple-600">Cumplimiento de recurrencias</p>
+                  <p className="text-2xl font-bold">
+                    {report.recurring.completed}/{report.recurring.total}
+                    <span className="text-sm font-normal text-purple-600 ml-2">
+                      ({report.recurring.percentage}%)
+                    </span>
+                  </p>
                 </div>
               </div>
 
@@ -152,8 +209,10 @@ const TaskProgress: React.FC = () => {
                       <XAxis dataKey="name" />
                       <YAxis />
                       <Tooltip />
-                      <Bar dataKey="Completadas" fill="#10B981" />
-                      <Bar dataKey="Total" fill="#93C5FD" />
+                      <Bar dataKey="Instancias Completadas" fill="#8B5CF6" />
+                      <Bar dataKey="Total de Instancias" fill="#C4B5FD" />
+                      <Bar dataKey="Tareas Completadas" fill="#10B981" />
+                      <Bar dataKey="Total de Tareas" fill="#93C5FD" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
