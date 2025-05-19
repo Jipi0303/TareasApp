@@ -35,7 +35,7 @@ const TaskList: React.FC<{
       </div>
       
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-800">
+        <h2 className="text-xl font-semibold text-blue-800">
           Mis Tareas
           {filteredTasks.length > 0 && (
             <span className="ml-2 text-sm font-normal text-gray-500">
