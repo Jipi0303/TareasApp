@@ -26,12 +26,13 @@ const TaskCalendar: React.FC = () => {
   return (
     <>
       <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 left-20 p-3 bg-white text-green-600 rounded-full shadow-lg hover:bg-green-50 transition-colors focus:outline-none focus:ring-2 focus:ring-green-300 dark:bg-gray-700 dark:text-green-400 dark:hover:bg-gray-600 warm:bg-yellow-100 warm:hover:bg-yellow-200"
-        title="Ver calendario"
-      >
-        <CalendarIcon className="h-6 w-6" />
-      </button>
+  onClick={() => setIsOpen(true)}
+  className="fixed bottom-[5.5rem] left-6 p-3 bg-white text-green-600 rounded-full shadow-lg hover:bg-green-50 transition-colors focus:outline-none focus:ring-2 focus:ring-green-300 dark:bg-gray-700 dark:text-green-400 dark:hover:bg-gray-600 warm:bg-yellow-100 warm:hover:bg-yellow-200"
+  title="Ver calendario"
+>
+  <CalendarIcon className="h-6 w-6" />
+</button>
+
 
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50 p-4">
