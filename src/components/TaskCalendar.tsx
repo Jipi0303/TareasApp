@@ -27,7 +27,7 @@ const TaskCalendar: React.FC = () => {
     <>
       <button
   onClick={() => setIsOpen(true)}
-  className="fixed bottom-[8rem] left-6 p-3 bg-white text-green-600 rounded-full shadow-lg hover:bg-green-50 transition-colors focus:outline-none focus:ring-2 focus:ring-green-300 dark:bg-gray-700 dark:text-green-400 dark:hover:bg-gray-600 warm:bg-yellow-100 warm:hover:bg-yellow-200"
+  className="fixed bottom-[8.5rem] left-6 p-3 bg-white text-green-600 rounded-full shadow-lg hover:bg-green-50 transition-colors focus:outline-none focus:ring-2 focus:ring-green-300 dark:bg-gray-700 dark:text-green-400 dark:hover:bg-gray-600 warm:bg-yellow-100 warm:hover:bg-yellow-200"
   title="Ver calendario"
 >
   <CalendarIcon className="h-6 w-6" />
