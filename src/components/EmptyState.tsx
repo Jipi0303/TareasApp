@@ -15,7 +15,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   return (
     <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
       <ClipboardList className="h-16 w-16 mb-4 text-blue-500 opacity-50" />
-       <h3 className="text-lg font-medium text-gray-900 mb-2">{message}</h3>
+      <h3 className="text-lg font-medium mb-2">{message}</h3>
       {actionText && onAction && (
         <button
           onClick={onAction}
